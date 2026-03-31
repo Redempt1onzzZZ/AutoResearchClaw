@@ -161,7 +161,7 @@ def _is_timeout(exc: BaseException) -> bool:
     return isinstance(reason, (TimeoutError, socket.timeout))
 
 
-def check_llm_connectivity(base_url: str) -> CheckResult:
+def check_llm_connectivity(base_url: str, api_key: str = "") -> CheckResult:
     if not base_url.strip():
         return CheckResult(
             name="llm_connectivity",
@@ -171,7 +171,10 @@ def check_llm_connectivity(base_url: str) -> CheckResult:
         )
 
     url = _models_url(base_url)
-    req = urllib.request.Request(url, method="HEAD")
+    headers: dict[str, str] = {}
+    if api_key.strip():
+        headers["Authorization"] = f"Bearer {api_key}"
+    req = urllib.request.Request(url, headers=headers, method="HEAD")
 
     try:
         with urllib.request.urlopen(req, timeout=5):
